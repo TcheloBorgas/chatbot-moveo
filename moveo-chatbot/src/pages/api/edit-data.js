@@ -15,7 +15,16 @@ export default async function handler(req, res) {
     }
 
     const { session_id } = req.body || {};
-    if (!session_id) return res.status(400).json({ error: 'session_id ausente.' });
+    if (!session_id) {
+      return res.status(400).json({
+        responses: [
+          {
+            type: 'text',
+            texts: ['ID da sessão ausente.']
+          }
+        ]
+      });
+    }
 
     const accountId = req.headers['x-moveo-account-id'];
     const url = `https://api.moveo.ai/v1/accounts/${accountId}/analytics/sessions/${session_id}/content`;
@@ -27,12 +36,26 @@ export default async function handler(req, res) {
     const conversa = analytics.data || 'Sem conteúdo';
 
     return res.status(200).json({
-      output: {
-        live_instructions: `Conversa para edição:\n${JSON.stringify(conversa)}`,
-      },
+      responses: [
+        {
+          type: 'text',
+          texts: [`Conversa para edição:\n${JSON.stringify(conversa)}`]
+        }
+      ],
+      context: {
+        ultima_sessao_id: session_id
+      }
     });
+
   } catch (error) {
     console.error('[edit-data] Erro:', error);
-    return res.status(500).json({ error: 'Erro ao processar edição.' });
+    return res.status(500).json({
+      responses: [
+        {
+          type: 'text',
+          texts: ['Erro ao processar a edição.']
+        }
+      ]
+    });
   }
 }

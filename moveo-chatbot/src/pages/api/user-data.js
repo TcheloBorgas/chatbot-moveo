@@ -30,7 +30,14 @@ export default async function handler(req, res) {
 
     if (!phone) {
       console.warn('[user-data] Nenhum telefone fornecido');
-      return res.status(400).json({ error: 'Telefone não enviado.' });
+      return res.status(400).json({
+        responses: [
+          {
+            type: 'text',
+            texts: ['Nenhum telefone fornecido.']
+          }
+        ]
+      });
     }
 
     console.log('[user-data] Iniciando autenticação JWT com GOOGLE_CLIENT_EMAIL...');
@@ -59,7 +66,14 @@ export default async function handler(req, res) {
 
     if (!userRow) {
       console.warn('[user-data] Telefone não encontrado na planilha');
-      return res.status(404).json({ error: 'Usuário não encontrado.' });
+      return res.status(200).json({
+        responses: [
+          {
+            type: 'text',
+            texts: ['Telefone não encontrado na base de dados.']
+          }
+        ]
+      });
     }
 
     const [telefone, nome, email, info] = userRow;
@@ -69,10 +83,17 @@ export default async function handler(req, res) {
     console.log(conteudo);
 
     return res.status(200).json({
-      output: {
-        live_instructions: {
-          conteudo
+      responses: [
+        {
+          type: 'text',
+          texts: [conteudo]
         }
+      ],
+      context: {
+        nome,
+        telefone,
+        email,
+        info
       }
     });
 
@@ -80,6 +101,13 @@ export default async function handler(req, res) {
     console.error('[user-data] ERRO ao processar webhook:');
     console.error(error.message || error);
     if (error.response?.data) console.error('[user-data] Erro da API Google:', error.response.data);
-    return res.status(500).json({ error: 'Erro ao acessar dados.' });
+    return res.status(500).json({
+      responses: [
+        {
+          type: 'text',
+          texts: ['Erro ao acessar os dados do usuário. Tente novamente mais tarde.']
+        }
+      ]
+    });
   }
 }

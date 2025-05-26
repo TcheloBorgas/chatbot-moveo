@@ -34,7 +34,14 @@ export default async function handler(req, res) {
     const events = response.data.items || [];
 
     if (events.length === 0) {
-      return res.status(200).json({ output: { live_instructions: 'Nenhum compromisso encontrado.' } });
+      return res.status(200).json({
+        responses: [
+          {
+            type: 'text',
+            texts: ['Nenhum compromisso encontrado.']
+          }
+        ]
+      });
     }
 
     const conteudo = events.map(ev => {
@@ -42,9 +49,24 @@ export default async function handler(req, res) {
       return `- **${ev.summary}** em ${start}`;
     }).join('\n');
 
-    return res.status(200).json({ output: { live_instructions: conteudo } });
+    return res.status(200).json({
+      responses: [
+        {
+          type: 'text',
+          texts: [conteudo]
+        }
+      ]
+    });
+
   } catch (error) {
     console.error('[user-calendar] Erro:', error);
-    return res.status(500).json({ error: 'Erro ao acessar a agenda.' });
+    return res.status(500).json({
+      responses: [
+        {
+          type: 'text',
+          texts: ['Erro ao acessar a agenda.']
+        }
+      ]
+    });
   }
 }
